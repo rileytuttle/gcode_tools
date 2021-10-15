@@ -1,0 +1,6 @@
+should split out the circle arc objects into a new file/folder called path primitives
+then we pass them the gcode writer so they can take care of their own logi
+
+gcode writer should only be concerned with writing the lowest level of stuff
+so the actual Gcode commands
+for instance the arc path and goto functions can stay in gcode writer but the other methods that don't directly write gcode should move out to the path primitives
