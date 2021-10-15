@@ -35,10 +35,12 @@ class CircleParams(ArcParams):
         self.end_point = self.start_point
 
 class GcodeWriter():
-    def __init__(self, filehandle):
-        self.filehandle = filehandle
+    def __init__(self, filename):
+        self.filehandle = open(filename, 'w+')
         self.units = "mm"
         self.type = "GRBL"
+    def __del__(self):
+        self.filehandle.close()
     def write(self, gcode_text):
         self.filehandle.write(f'{gcode_text}\n')
     def comment(self, comment_text):
