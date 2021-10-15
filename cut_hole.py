@@ -3,7 +3,8 @@
 import argparse
 
 import pdb
-from gcode_utils import GcodeWriter, CircleParams
+from gcode_utils import GcodeWriter
+from path_primitives import CirclePath
 
 def write_gcode(args):
     gw = GcodeWriter(args.ofile)
@@ -13,8 +14,8 @@ def write_gcode(args):
     gw.comment("goto safe place")
     gw.goto(x=0, y=0, z=15)
     gw.comment("cut circle")
-    cp = CircleParams(gcode_writer=gw, center=[0,0], r=args.radius, f=args.cut_speed, bit_width=args.bit_width)
-    cp.cut_arc(cp)
+    cp = CirclePath(gcode_writer=gw, center=[0,0], r=args.radius, f=args.cut_speed, bit_width=args.bit_width)
+    cp.cut_arc()
 
     gw.comment("when finished go back to x0y0zsafe")
     gw.goto(x=0, y=0, z=15)
