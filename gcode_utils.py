@@ -1,38 +1,4 @@
 import pdb
-import numpy as np
-
-def dist_between_two_points(p1, p2):
-    dist_vec = p1-p2
-    dist = np.sqrt(np.sum(dist_vec**2))
-    return dist
-
-class ArcParams():
-    def __init__(self, center=[0,0], z=0, pz=0, r=1, f=100, pf=30, spindle_speed=1000, bit_width=0, direction="cw", start_point=[0,0], end_point=[0,0], repeats=0):
-        self.center = np.array(center)
-        self.travel_z = z
-        self.cut_depth = pz
-        self.bit_width = bit_width # cuts are made offset so that we only cut the specified radius from center
-        self.radius = r-bit_width/2 # radius of circle
-        self.f = f # feedrate
-        self.plunge_feedrate = pf
-        self.spindle_speed = spindle_speed
-        self.direction = direction # directions can be cw: clockwise or ccw: counter-clockwise
-        self.repeats = repeats
-        self.start_point = np.array([0,0])
-        self.end_point = np.array([0,0])
-        self.set_start_end_points(start_point, end_point)
-    def set_start_end_points(self, start_point, end_point):
-        # assumed that the points will be on the circle
-        assert(dist_between_two_points(self.center, start_point) == self.radius and
-               dist_between_two_points(self.center, end_point) == self.radius)
-        self.start_point = start_point
-        self.end_point = end_point
-
-class CircleParams(ArcParams):
-    def set_start_end_points(self, start_point, end_point):
-        # in a circle set the start and end points to the same point on the circle
-        self.start_point = np.array([self.center[0] + self.radius, self.center[1]])
-        self.end_point = self.start_point
 
 class GcodeWriter():
     def __init__(self, filename):
@@ -99,20 +65,20 @@ class GcodeWriter():
         # then plunge the z
         self.set_spindle_speed(s)
         self.goto(z=zpd, f=pf)
-    def arc_path(self, params):
-        self.comment(f"tracing arc path of {params.radius}{self.units} from {params.start_point} to {params.end_point} with center {params.center}") 
-        if params.direction == "cw":
+    def arc_path(self, center=[0,0], radius=1, start_point=[0,0], end_point=[0,0], direction="cw", feedrate=100):
+        self.comment(f"tracing arc path of {radius}{self.units} from {start_point} to {end_point} with center {center}") 
+        if direction == "cw":
             cmd = "G02"
-        elif params.direction == "ccw":
+        elif direction == "ccw":
             cmd = "G03"
         else:
-            raise ValueError(f"{params.direction} is not a supported direction")
+            raise ValueError(f"{direction} is not a supported direction")
         # run G02 Xxx Yyy Iii Jjj Ffff
         #   that will do a cw cut in starting at current and ending at
         #   [xx,yy] the center is [current_x - ii, current_y - jj]
         #   with feedrate fff
-        ij_offset = params.center - params.start_point
-        cmd = f"{cmd} X{params.end_point[0]} Y{params.end_point[1]} I{ij_offset[0]} J{ij_offset[1]} F{params.f}"
+        ij_offset = center - start_point
+        cmd = f"{cmd} X{end_point[0]} Y{end_point[1]} I{ij_offset[0]} J{ij_offset[1]} F{feedrate}"
         self.write(cmd)
 
     def cut_arc(self, params):
@@ -124,7 +90,3 @@ class GcodeWriter():
 
     def not_implemented():
         raise Exception("not implemented yet")
-            
-
-      
-            
